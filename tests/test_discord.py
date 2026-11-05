@@ -1,7 +1,10 @@
 import json
+import os
 import socket
+import tempfile
 import threading
 import unittest
+from unittest import mock
 
 from roserpc.discord import HEADER, OP_FRAME, OP_PING, OP_PONG, DiscordClient, DiscordError
 
@@ -61,6 +64,33 @@ class DiscordClientTests(unittest.TestCase):
             self.client.set_activity({})
         thread.join()
         self.assertTrue(self.client.connected)
+
+
+class SocketDiscoveryTests(unittest.TestCase):
+    def test_connects_to_flatpak_discord_socket(self):
+        # Short directory: a Unix socket path is limited to about 100 bytes.
+        with tempfile.TemporaryDirectory(dir="/tmp") as runtime:
+            sandbox = os.path.join(runtime, "app", "com.discordapp.Discord")
+            os.makedirs(sandbox)
+            server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            server.bind(os.path.join(sandbox, "discord-ipc-0"))
+            server.listen(1)
+
+            def fake_discord():
+                conn, _ = server.accept()
+                with conn:
+                    read_frame(conn)
+                    write_frame(conn, OP_FRAME, {"evt": "READY", "data": {"user": {"username": "flatpak"}}})
+
+            thread = threading.Thread(target=fake_discord)
+            thread.start()
+            client = DiscordClient("123")
+            with mock.patch.dict(os.environ, {"XDG_RUNTIME_DIR": runtime}):
+                user = client.connect()
+            client.close()
+            thread.join()
+            server.close()
+        self.assertEqual(user["username"], "flatpak")
 
 
 if __name__ == "__main__":
