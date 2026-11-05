@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "roserpc"
+version = "0.1.0"
+description = "Discord Rich Presence for Roblox running under Rosemary"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+roserpc = "roserpc.__main__:main"
+
+[tool.setuptools]
+packages = ["roserpc"]

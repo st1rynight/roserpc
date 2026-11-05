@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=roserpc
+Comment=Discord Rich Presence for Roblox under Rosemary
+Exec=@ROSERPC@/bin/roserpc
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
