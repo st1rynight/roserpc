@@ -69,6 +69,11 @@ session before changing anything that relies on them.
 
 * **Process.** Rosemary execs guests as `<runtime> run [--emulated] <path> ...`, so the player is
   an argument whose basename is `RobloxPlayer`. `RobloxPlayerInstaller` must not match.
+  [Butter](https://github.com/microlift/butter) runs the bundle instead
+  (`<runtime> run <bottle>/prefix/root/Applications/Roblox.app`), so a `run` target that is an
+  `.app` whose `Info.plist` `CFBundleExecutable` is `RobloxPlayer` is the player too. Butter's
+  keeper (`butter --supervise ... -- <runtime> run ...`) must not match, so only `argv[1] == run`
+  counts.
 * **Logs.** By default they live in `<prefix>/root/Users/<name>/Library/Logs/Roblox`. One player
   log is written per launch, and joining several games in one launch appends to the same log.
   Ignore `*CrashHandler*` logs.

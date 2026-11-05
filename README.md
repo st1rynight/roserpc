@@ -212,8 +212,9 @@ To pass options to the service, edit `ExecStart` in `~/.config/systemd/user/rose
 ## How it works
 
 1. **Finding Roblox.** Rosemary runs the player as `rosemary run .../RobloxPlayer`, so roserpc
-   looks for a process with `RobloxPlayer` among its arguments. It reads `/proc` on Linux and uses
-   `ps` elsewhere.
+   looks for a process with `RobloxPlayer` among its arguments. Butter runs the app bundle
+   (`rosemary run .../Roblox.app`), so a bundle whose executable is `RobloxPlayer` counts too. It
+   reads `/proc` on Linux and uses `ps` elsewhere.
 2. **Knowing what you're playing.** Roblox writes a log inside the Rosemary prefix, at
    `~/.local/share/rosemary/prefixes/default/root/Users/<you>/Library/Logs/Roblox`. roserpc
    follows the newest one, and reads joins, teleports, private and reserved servers, and leaving
