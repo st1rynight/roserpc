@@ -22,6 +22,28 @@ python3 -m unittest discover -s tests -v         # all tests
 python3 -m unittest tests.test_activity -v       # one module
 ```
 
+## AppImage
+
+`tools/build-appimage.sh` produces `build/roserpc-x86_64.AppImage` (`build/` is gitignored). The
+release asset keeps that version-free name, so `releases/latest/download/roserpc-x86_64.AppImage`
+always resolves.
+
+* **Inputs.** A prebuilt manylinux2014 Python from python-appimage, plus the AppImage type2
+  runtime. Both are pinned by version and SHA-256 at the top of the script. To bump one, update
+  the version and the hash together.
+* **Nothing downloaded is executed.** The Python AppImage is unpacked with `unsquashfs` at the
+  offset just past its runtime's ELF section headers. The output is `runtime + mksquashfs image`,
+  which is the same thing appimagetool writes. Keep it that way; don't add appimagetool or
+  `--appimage-extract` steps.
+* **Contents.** roserpc goes into the bundled interpreter's `site-packages`. pip, its
+  `sitecustomize.py` hook, Tk, IDLE and the test suite are removed. `certifi` must stay: it is
+  the CA bundle.
+* **Launcher.** `contrib/appimage/AppRun` runs `python3.12 -I -m roserpc`, so the host's
+  `PYTHONPATH` and user site are ignored. It also sets `SSL_CERT_FILE` to the bundled
+  `certs.pem`, because the bundled OpenSSL can't find the host's CA store.
+* **Verifying a build.** Run the test suite with `build/AppDir/opt/python3.12/bin/python3.12 -I`,
+  then run the AppImage itself with `--help`.
+
 ## How it works
 
 One polling loop (`__main__.RoseRpc.tick`, every `POLL_INTERVAL` seconds):

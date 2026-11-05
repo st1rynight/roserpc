@@ -1,0 +1,7 @@
+#!/bin/sh
+# AppImage entry point: roserpc on the Python bundled beside it.
+here=$(dirname -- "$(readlink -f -- "$0")")
+# The bundled OpenSSL does not know where the host keeps its certificates.
+export SSL_CERT_FILE="$here/opt/_internal/certs.pem"
+# -I keeps the host's PYTHONPATH and user packages out of the bundled Python.
+exec "$here/opt/python3.12/bin/python3.12" -I -m roserpc "$@"

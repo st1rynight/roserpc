@@ -14,13 +14,61 @@ doesn't modify it. It's plain Python with no packages beyond the standard librar
 
 ## Requirements
 
-* **Python 3.10 or newer**
-* **git**, to download roserpc
 * **A Discord desktop client.** The browser version can't receive Rich Presence, because it has no
   IPC socket. The official client, Flatpak, Snap and Vesktop all work.
 * **Roblox already running under Rosemary.**
+* **For the AppImage:** an x86_64 glibc Linux system with FUSE (`fusermount3` or `fusermount`).
+  Python isn't needed; the AppImage brings its own.
+* **For the source install:** Python 3.10 or newer, and git.
 
-## Install
+## Install the AppImage (quickest)
+
+On x86_64 Arch, Debian/Ubuntu, Gentoo, NixOS and most other glibc distributions:
+
+```sh
+mkdir -p ~/.local/bin
+curl -fL -o ~/.local/bin/roserpc https://github.com/st1rynight/roserpc/releases/latest/download/roserpc-x86_64.AppImage
+chmod +x ~/.local/bin/roserpc
+~/.local/bin/roserpc
+```
+
+AppImages need FUSE. If yours doesn't start and mentions FUSE, either install it, or run
+`~/.local/bin/roserpc --appimage-extract-and-run` instead:
+
+| Distribution | FUSE package |
+|---|---|
+| Arch | `sudo pacman -S --needed fuse3` |
+| Debian / Ubuntu | `sudo apt install fuse3` |
+| Gentoo | `sudo emerge --ask --noreplace sys-fs/fuse` |
+| NixOS | set `programs.appimage.enable = true;` and `programs.appimage.binfmt = true;`, or run it with `appimage-run` |
+
+The AppImage doesn't work on Alpine, because its bundled Python needs glibc, or on FreeBSD. Use
+the source install there.
+
+To start the AppImage automatically with systemd:
+
+```sh
+mkdir -p ~/.config/systemd/user
+cat > ~/.config/systemd/user/roserpc.service <<'EOF'
+[Unit]
+Description=Discord Rich Presence for Roblox under Rosemary
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/roserpc
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+EOF
+systemctl --user daemon-reload
+systemctl --user enable --now roserpc
+```
+
+To update, download it again with the same `curl` command, then restart roserpc.
+
+## Install from source
 
 ### 1. Install the packages
 
@@ -199,6 +247,14 @@ upload an art asset with the key `roblox`, and pass the application's ID with `-
 
 ```sh
 cd ~/roserpc && python3 -m unittest discover -s tests -v
+```
+
+To build the AppImage into `build/roserpc-x86_64.AppImage`, you need `curl`, `python3` and
+`squashfs-tools`:
+
+```sh
+tools/build-appimage.sh
+nix shell nixpkgs#squashfsTools -c tools/build-appimage.sh   # if squashfs-tools isn't installed
 ```
 
 See [CLAUDE.md](CLAUDE.md) for how the code is organised.

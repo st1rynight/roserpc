@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=roserpc
+Comment=Discord Rich Presence for Roblox under Rosemary
+Exec=roserpc
+Icon=roserpc
+Terminal=true
+Categories=Network;Game;
